@@ -11,18 +11,15 @@ import CRUDTable, {
 // Component's Base CSS
 import "./index.css";
 
-const DescriptionRenderer = ({ field }) => <textarea {...field} />;
-
+// eslint-disable-next-line
 let tasks = [
   {
     id: 1,
-    title: "Create an example",
-    description: "Create an example of how to use the component"
-  },
-  {
-    id: 2,
-    title: "Improve",
-    description: "Improve the component!"
+    codigo: "7812-E",
+    ciudadDestino: "Mendoza",
+    ciudadOrigen: "Mendoza",
+    courier: "Andreani",
+    costoEnvio: "850",
   }
 ];
 
@@ -60,13 +57,37 @@ const service = {
     return Promise.resolve(result);
   },
   create: task => {
-    count += 1;
-    tasks.push({
-      ...task,
-      id: count
-    });
-    return Promise.resolve(task);
-  },
+
+    console.log(task)
+    console.log(JSON.stringify(task))
+
+    const requestOptions = {
+      method: 'POST',
+      mode: "no-cors",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(task)
+    };
+
+    const URL = "https://ingsoftware-production.up.railway.app/api/envio/create"
+
+    // Send a POST request using fetch
+    return fetch(URL, requestOptions)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        count += 1;
+        tasks.push({
+          ...response,
+          id: count
+        });
+        return Promise.resolve(task);
+      })
+      .catch(error => {
+        console.error('Error para crear el envío:', error);
+        return Promise.reject(error);
+      });
+    },
   update: data => {
     const task = tasks.find(t => t.id === data.id);
     task.title = data.title;
@@ -93,8 +114,8 @@ const Example = () => (
       <Fields>
         <Field name="id" label="Id" hideInCreateForm />
         <Field name="codigo" label="Codigo" placeholder="Codigo" />
-        <Field name="ciudaddestino" label="Ciudad de Destino" placeholder="Ciudad de Origen"/>
-        <Field name="ciudadorigen" label="Ciudad de Origen" placeholder="Ciudad de Origen"/>
+        <Field name="ciudadDestino" label="Ciudad de Destino" placeholder="Ciudad de Origen"/>
+        <Field name="ciudadOrigen" label="Ciudad de Origen" placeholder="Ciudad de Origen"/>
         <Field name="courier" label="Courier" placeholder="courier" />
         <Field name="costoEnvio" label="Costo de Envio" placeholder="Costo de envio"/>
         <Field name="observacionesEnvio" label="Observaciones" placeholder="Observaciones"/>
@@ -103,15 +124,11 @@ const Example = () => (
         title="Nuevo Envío"
         trigger="Crear envío"
         onSubmit={task => service.create(task)}
-        submitText="Create"
+        submitText="Crear"
         validate={values => {
           const errors = {};
-          if (!values.title) {
-            errors.title = "Please, provide task's title";
-          }
-
-          if (!values.description) {
-            errors.description = "Please, provide task's description";
+          if (!values.codigo) {
+            errors.codigo = "Porfavor ingresa un código";
           }
 
           return errors;
@@ -119,24 +136,15 @@ const Example = () => (
       />
 
       <UpdateForm
-        title="Task Update Process"
-        message="Update task"
-        trigger="Update"
+        title="Actualizar envío"
+        trigger="Actualizar"
         onSubmit={task => service.update(task)}
-        submitText="Update"
+        submitText="Actualizar"
         validate={values => {
           const errors = {};
 
           if (!values.id) {
             errors.id = "Es necesario un id";
-          }
-
-          if (!values.title) {
-            errors.title = "Please, provide task's title";
-          }
-
-          if (!values.description) {
-            errors.description = "Please, provide task's description";
           }
 
           return errors;
